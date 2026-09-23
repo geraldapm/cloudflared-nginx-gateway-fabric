@@ -19,3 +19,43 @@ kubectl -n kube-system edit configmap cilium-config
 ```bash
 kubectl rollout restart ds -n kube-system cilium
 ```
+
+- Helm binary. Get it from [helm.sh](https://helm.sh)
+
+## Installation - Nginx Gateway Fabric
+- Install the Kubernetes Gateway API CRD. Refer to this [Documentation](https://gateway-api.sigs.k8s.io/guides/getting-started/introduction/#installing-gateway-api).
+```bash
+kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml
+```
+
+- Install the Nginx Gateway Fabric by using this command. Ensure to enable `nginx.service.type=ClusterIP` because we want to route the cloudflare tunnel to the clusterIP.
+```bash
+helm install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric --create-namespace -n nginx-gateway --set nginx.service.type=ClusterIP
+```
+
+## Installation - Cloudflare Tunnel
+- Refer to this [tutorial](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/deployment-guides/kubernetes/) for further explanations.
+- Create the `cloudflared` namespace:
+```bash
+kubectl create ns cloudflared
+```
+- Create the cloudflare tunnel based on the tutorial. Ensure that you have the token from the tunnel creation wizard.
+tunnel-token.yaml
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tunnel-token
+  namespace: cloudflared
+stringData:
+  token: <YOUR_TUNNEL_TOKEN>
+```
+
+- Apply the manifest
+```bash
+kubectl apply -f tunnel-token.yaml
+kubectl apply -f cloudflared-tunnel.yaml
+```
+
+## Implementation: Create the Gateway
+TODO
