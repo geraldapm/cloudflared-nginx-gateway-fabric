@@ -72,4 +72,4 @@ kubectl apply -f httpbin-route.yaml
 ```
 
 ## Implementation: Add the Cloudflare tunnel route
-- Refer on this [tutorial](https://community.cloudflare.com/t/wildcard-subdomains/501612) for details. In this case, *.k8s.gpm.my.id is pointed into `http://k8s-gateway-nginx.nginx-gateway.svc.cluster.local`
+- Refer on this [tutorial](https://community.cloudflare.com/t/wildcard-subdomains/501612) for details. In this case, `*.k8s.gpm.my.id` is pointed into `http://k8s-gateway-nginx.nginx-gateway.svc.cluster.local`
