@@ -58,4 +58,18 @@ kubectl apply -f cloudflared-tunnel.yaml
 ```
 
 ## Implementation: Create the Gateway
-TODO
+- Apply the sample application
+```bash
+kubectl create ns httpbin
+kubectl apply -f httpbin-deployment.yaml -n httpbin
+```
+
+- Apply the following manifests for creating the gateway
+```bash
+kubectl apply -f nginx-proxy-k8s.yaml
+kubectl apply -f k8s-gateway.yaml
+kubectl apply -f httpbin-route.yaml
+```
+
+## Implementation: Add the Cloudflare tunnel route
+- Refer on this [tutorial](https://community.cloudflare.com/t/wildcard-subdomains/501612) for details. In this case, *.k8s.gpm.my.id is pointed into `http://k8s-gateway-nginx.nginx-gateway.svc.cluster.local`

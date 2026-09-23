@@ -1,0 +1,36 @@
+# This manifest will help to assign the NGF data plane pods into the control-plane and defining the NodePorts
+---
+apiVersion: gateway.nginx.org/v1alpha2
+kind: NginxProxy
+metadata:
+  name: k8s-proxy-config
+  namespace: nginx-gateway
+spec:
+  kubernetes:
+    service:
+      externalTrafficPolicy: Cluster
+      type: NodePort
+      nodePorts:
+      - listenerPort: 80
+        port: 31111
+    deployment:
+      replicas: 2
+      pod:
+        tolerations:
+          - effect: NoSchedule
+            operator: Exists
+            key: node-role.kubernetes.io/control-plane
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: node-role.kubernetes.io/control-plane
+                      operator: Exists
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: nginx-gateway-fabric
+                    app.kubernetes.io/component: nginx
+                topologyKey: kubernetes.io/hostname
