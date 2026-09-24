@@ -73,3 +73,43 @@ kubectl apply -f httpbin-route.yaml
 
 ## Implementation: Add the Cloudflare tunnel route
 - Refer on this [tutorial](https://community.cloudflare.com/t/wildcard-subdomains/501612) for details. In this case, `*.k8s.gpm.my.id` is pointed into `http://k8s-gateway-nginx.nginx-gateway.svc.cluster.local`
+
+
+## Extra: Add Cert Manager and Private CA Certs
+- Ensure that your internet can query other DNS servers. For example in my environment, access to other DNS servers are restricted. So I have to change the nameservers to the provider DNS server. Semarkampret memang!
+```bash
+--set extraArgs='{--dns01-recursive-nameservers-only,--dns01-recursive-nameservers=10.79.226.107:53:53}
+```
+- Install Cert Manager:
+```bash
+helm install \
+  cert-manager oci://quay.io/jetstack/charts/cert-manager \
+  --version v1.21.2 \
+  --namespace cert-manager \
+  --create-namespace \
+  --set config.apiVersion="controller.config.cert-manager.io/v1alpha1" \
+  --set config.kind="ControllerConfiguration" \
+  --set config.enableGatewayAPI=true \
+  --set extraArgs='{--dns01-recursive-nameservers-only,--dns01-recursive-nameservers=1.1.1.1:53\,8.8.8.8:53}' \
+  --set crds.enabled=true
+```
+
+- Create Cloudflare DNS API token for editing DNS zones (ACME Challenge)
+```bash
+kubectl create secret -n cert-manager generic dns-api-token --from-literal=token=<API TOKEN>
+```
+
+- Apply Cert Manager Cluster Issuer
+```bash
+kubectl apply -f letsencrypt-prod.yaml
+```
+
+- Create the secure-gateway Gateway Resource:
+```bash
+kubectl apply -f secure-gateway.yaml
+```
+
+- Then finally create the httpbin route for secure gateway:
+```bash
+kubectl apply -f secure-route.yaml
+```
