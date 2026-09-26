@@ -40,20 +40,12 @@ helm install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric --create-namesp
 kubectl create ns cloudflared
 ```
 - Create the cloudflare tunnel based on the tutorial. Ensure that you have the token from the tunnel creation wizard.
-tunnel-token.yaml
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: tunnel-token
-  namespace: cloudflared
-stringData:
-  token: <YOUR_TUNNEL_TOKEN>
+```bash
+kubectl create secret -n cloudflared generic tunnel-token --from-literal=token=<YOUR_TUNNEL_TOKEN>
 ```
 
 - Apply the manifest
 ```bash
-kubectl apply -f tunnel-token.yaml
 kubectl apply -f cloudflared-tunnel.yaml
 ```
 
